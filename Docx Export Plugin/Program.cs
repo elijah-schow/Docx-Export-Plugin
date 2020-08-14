@@ -73,14 +73,22 @@ namespace DocxExportPlugin
                                 // End the previous run if it's still ongoing
                                 if (r != null)
                                 {
-                                    r.AppendChild(new Text(t));
-                                    t = "";
+                                    // Ignore empty runs
+                                    if (t != "")
+                                    {
+                                        r.AppendChild(new Text(t));
+                                        t = "";
 
-                                    p.AppendChild(r);
+                                        p.AppendChild(r);
+                                    }
                                     r = null;
                                 }
 
-                                body.AppendChild(p);
+                                // Ignore empty paragraphs
+                                if (p.InnerText != "")
+                                {
+                                    body.AppendChild(p);
+                                }
                                 p = null;
                             }
 
@@ -122,7 +130,9 @@ namespace DocxExportPlugin
 
 
             // TODO:
-            // - [ ] Character styles
+            // - [x] Character styles
+            // - [x] Eliminate empty paragraphs
+            // - [ ] Mult-paragraph quotes
             // - [ ] exclude factsmith modified date
             // - [ ] exclude factsmith TOC
             // - [ ] render proper TOC
