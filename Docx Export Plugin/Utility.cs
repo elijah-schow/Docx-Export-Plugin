@@ -10,9 +10,9 @@ namespace DocxExportPlugin
 	public class Utility
 	{
         // Apply a style to a paragraph.
-        public static void StyleParagraph(WordprocessingDocument doc,
-            string styleid, string stylename, Paragraph p)
+        public static void StyleParagraph(WordprocessingDocument doc, string stylename, Paragraph p)
         {
+
             // If the paragraph has no ParagraphProperties object, create one.
             if (p.Elements<ParagraphProperties>().Count() == 0)
             {
@@ -22,33 +22,8 @@ namespace DocxExportPlugin
             // Get the paragraph properties element of the paragraph.
             ParagraphProperties pPr = p.Elements<ParagraphProperties>().First();
 
-            // Get the Styles part for this document.
-            StyleDefinitionsPart part =
-                doc.MainDocumentPart.StyleDefinitionsPart;
-
-            // If the Styles part does not exist, add it and then add the style.
-            if (part == null)
-            {
-                part = AddStylesPartToPackage(doc);
-                AddNewStyle(part, styleid, stylename);
-            }
-            else
-            {
-                // If the style is not in the document, add it.
-                if (IsStyleIdInDocument(doc, styleid) != true)
-                {
-                    // No match on styleid, so let's try style name.
-                    string styleidFromName = GetStyleIdFromStyleName(doc, stylename);
-                    if (styleidFromName == null)
-                    {
-                        AddNewStyle(part, styleid, stylename);
-                    }
-                    else
-                        styleid = styleidFromName;
-                }
-            }
-
             // Set the style of the paragraph.
+            string styleid = GetStyleIdFromStyleName(doc, stylename);
             pPr.ParagraphStyleId = new ParagraphStyleId() { Val = styleid };
         }
 
@@ -65,7 +40,6 @@ namespace DocxExportPlugin
             RunProperties rPr = r.Elements<RunProperties>().First();
 
             string styleid = GetStyleIdFromStyleName(doc, stylename);
-            // string styleid = stylename;
 
             // Set the style of the paragraph.
             rPr.Append(new RunStyle(){ Val = styleid });

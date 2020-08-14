@@ -95,7 +95,7 @@ namespace DocxExportPlugin
                             // Create the next paragraph
                             p = new Paragraph();
                             style = ReadFSXString(reader);
-                            Utility.StyleParagraph(document, style, style, p);
+                            Utility.StyleParagraph(document, style, p);
 
                             break;
                         case "SC":
@@ -160,7 +160,7 @@ namespace DocxExportPlugin
                         // Create a new paragraph with the same style as before
                         style = p?.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
                         p = new Paragraph();
-                        Utility.StyleParagraph(document, style, style, p);
+                        Utility.StyleParagraph(document, style, p);
 
                         // Create a new run with the same style as before
                         style = r?.RunProperties?.RunStyle?.Val;
@@ -169,7 +169,6 @@ namespace DocxExportPlugin
                     }
                 }
             }
-
 
             // TODO:
             // - [x] Character styles
@@ -181,6 +180,7 @@ namespace DocxExportPlugin
             // - [ ] exclude factsmith TOC
             // - [ ] render proper TOC
             // - [ ] render Title
+            // - [ ] Underline authors
             // - [ ] Images, bullets, etc?
         }
 
