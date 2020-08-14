@@ -64,34 +64,6 @@ namespace DocxExportPlugin
             // Get the run properties element of the paragraph.
             RunProperties rPr = r.Elements<RunProperties>().First();
 
-            /**
-            // Get the Styles part for this document.
-            StyleDefinitionsPart part =
-                doc.MainDocumentPart.StyleDefinitionsPart;
-
-            // If the Styles part does not exist, add it and then add the style.
-            if (part == null)
-            {
-                part = AddStylesPartToPackage(doc);
-                AddNewStyle(part, styleid, stylename);
-            }
-            else
-            {
-                // If the style is not in the document, add it.
-                if (IsStyleIdInDocument(doc, styleid) != true)
-                {
-                    // No match on styleid, so let's try style name.
-                    string styleidFromName = GetStyleIdFromStyleName(doc, stylename);
-                    if (styleidFromName == null)
-                    {
-                        AddNewStyle(part, styleid, stylename);
-                    }
-                    else
-                        styleid = styleidFromName;
-                }
-            }
-            */
-
             string styleid = GetStyleIdFromStyleName(doc, stylename);
             // string styleid = stylename;
 

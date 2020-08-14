@@ -125,6 +125,48 @@ namespace DocxExportPlugin
                         r = new Run();
                     }
                     t += Convert.ToChar(b);
+                // Newlines
+                } else if (b == 10 || b == 13)
+                {
+                    // Skip the second line break if there are two in a row (e.g. \r\n)
+                    int next = reader.PeekChar();
+                    if (next == 10 || next == 13)
+                    {
+                        reader.ReadChar();
+                    }
+
+                    // Append the previous paragraph to the document
+                    if (p != null)
+                    {
+                        // End the previous run if it's still ongoing
+                        if (r != null)
+                        {
+                            // Ignore empty runs
+                            if (t != "")
+                            {
+                                r.AppendChild(new Text(t));
+                                t = "";
+
+                                p.AppendChild(r);
+                            }
+                        }
+
+                        // Ignore empty paragraphs
+                        if (p.InnerText != "")
+                        {
+                            body.AppendChild(p);
+                        }
+
+                        // Create a new paragraph with the same style as before
+                        style = p?.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                        p = new Paragraph();
+                        Utility.StyleParagraph(document, style, style, p);
+
+                        // Create a new run with the same style as before
+                        style = r?.RunProperties?.RunStyle?.Val;
+                        r = new Run();
+                        Utility.StyleRun(document, style, r);
+                    }
                 }
             }
 
@@ -132,7 +174,9 @@ namespace DocxExportPlugin
             // TODO:
             // - [x] Character styles
             // - [x] Eliminate empty paragraphs
-            // - [ ] Mult-paragraph quotes
+            // - [x] Mult-paragraph quotes
+            // - [ ] Inline italics
+            // - [ ] Notes
             // - [ ] exclude factsmith modified date
             // - [ ] exclude factsmith TOC
             // - [ ] render proper TOC
