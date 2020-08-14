@@ -1,0 +1,141 @@
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Collections.Generic;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+
+namespace DocxExportPlugin
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string basePath = @"C:\Users\elija\Code\docx-export-plugin\";
+            string inputPath = basePath + "Chinese Economy - Weak.fsx";
+            string templatePath = basePath + "Template.docx";
+            Int32 unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            string outputPath = basePath +  "Output " + unixTimestamp + ".docx";
+
+            var document = WordprocessingDocument.Open(templatePath, true);
+            ImportFsx(inputPath, document);
+            document.SaveAs(outputPath);
+
+            Console.WriteLine("Saved " + outputPath);
+
+        }
+
+        public static void ImportFsx(string inputPath, WordprocessingDocument document)
+        {
+            Body body = document.MainDocumentPart.Document.Body;
+
+            // Start reading the fsx file
+            FileStream file = File.Open(inputPath, FileMode.Open);
+            BinaryReader reader = new BinaryReader(file, Encoding.ASCII);
+            
+            // Header
+            string title = reader.ReadLine();
+
+            string[] size = reader.ReadLine().Split(",");
+            float width = float.Parse(size[0]);
+            float height = float.Parse(size[1]);
+
+            string[] margins = reader.ReadLine().Split(",");
+            float left = float.Parse(margins[0]);
+            float right = float.Parse(margins[1]);
+            float top = float.Parse(margins[2]);
+            float bottom = float.Parse(margins[3]);
+
+            string styleSheet = reader.ReadLine();
+            string characterStyleSheet = reader.ReadLine();
+            string header = reader.ReadLine();
+            string footer = reader.ReadLine();
+
+            // Body
+            Paragraph p = null;
+            Run r = null;
+            string t = "";
+            string style;
+
+            while(!reader.IsEndOfStream())
+            {
+                byte b = reader.ReadByte();
+
+                // Start Codes
+                if (b == 27 || b == 28) {
+                    string code = new string(reader.ReadChars(2));
+                    switch (code)
+                    {
+                        case "ST":
+                            // Append the previous paragraph to the document
+                            if (p != null)
+                            {
+                                // End the previous run if it's still ongoing
+                                if (r != null)
+                                {
+                                    r.AppendChild(new Text(t));
+                                    t = "";
+
+                                    p.AppendChild(r);
+                                    r = null;
+                                }
+
+                                body.AppendChild(p);
+                                p = null;
+                            }
+
+                            // Create the next paragraph
+                            p = new Paragraph();
+                            style = ReadFSXString(reader);
+                            Utility.StyleParagraph(document, style, style, p);
+
+                            break;
+                        case "SC":
+                            if (r != null)
+                            {
+                                // Append text to the current run
+                                r.AppendChild(new Text(t));
+                                t = "";
+
+                                // Append current run to the current paragraph
+                                p.AppendChild(r);
+                                r = null;
+                            }
+
+                            // Create the next run
+                            r = new Run();
+                            style = ReadFSXString(reader);
+                            Utility.StyleRun(document, style, r);
+                            break;
+                    }
+                // ASCI Text
+                } else if (b >= 32 && b <= 128)
+                {
+                    // Start a new run if one doesn't exist already
+                    if (r == null)
+                    {
+                        r = new Run();
+                    }
+                    t += Convert.ToChar(b);
+                }
+            }
+
+
+            // TODO:
+            // - [ ] Character styles
+            // - [ ] exclude factsmith modified date
+            // - [ ] exclude factsmith TOC
+            // - [ ] render proper TOC
+            // - [ ] render Title
+            // - [ ] Images, bullets, etc?
+        }
+
+        public static string ReadFSXString(BinaryReader reader)
+        {
+            int length = reader.ReadByte() - 29;
+            return new string(reader.ReadChars(length));
+        }
+
+
+    }
+}
