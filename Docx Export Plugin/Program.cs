@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Linq;
 
 namespace DocxExportPlugin
 {
@@ -28,6 +29,10 @@ namespace DocxExportPlugin
         public static void ImportFsx(string inputPath, WordprocessingDocument document)
         {
             Body body = document.MainDocumentPart.Document.Body;
+            Paragraph p = null;
+            Run r = null;
+            string t = "";
+            string style;
 
             // Start reading the fsx file
             FileStream file = File.Open(inputPath, FileMode.Open);
@@ -51,12 +56,16 @@ namespace DocxExportPlugin
             string header = reader.ReadLine();
             string footer = reader.ReadLine();
 
-            // Body
-            Paragraph p = null;
-            Run r = null;
-            string t = "";
-            string style;
+            // Title
+            if (title != "")
+            {
+                p = new Paragraph(new Run(new Text(title)));
+                Utility.StyleParagraph(document, "Title", p);
+                body.PrependChild(p);
+                p = null;
+            }
 
+            // Body
             while(!reader.IsEndOfStream())
             {
                 byte b = reader.ReadByte();
@@ -174,14 +183,16 @@ namespace DocxExportPlugin
             // - [x] Character styles
             // - [x] Eliminate empty paragraphs
             // - [x] Mult-paragraph quotes
-            // - [ ] Inline italics
-            // - [ ] Notes
+            // - [x] render Title
             // - [ ] exclude factsmith modified date
             // - [ ] exclude factsmith TOC
             // - [ ] render proper TOC
-            // - [ ] render Title
-            // - [ ] Underline authors
+            // - [ ] Inline italics
+            // - [ ] Notes
+            // - [ ] Command line / Factsmith interface
             // - [ ] Images, bullets, etc?
+
+            // - [ ] Factsmith template
         }
 
         public static string ReadFSXString(BinaryReader reader)
