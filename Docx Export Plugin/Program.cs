@@ -32,7 +32,8 @@ namespace DocxExportPlugin
             Paragraph p = null;
             Run r = null;
             string t = "";
-            string style;
+            string style = "";
+            bool ignore = false;
 
             // Start reading the fsx file
             FileStream file = File.Open(inputPath, FileMode.Open);
@@ -77,6 +78,7 @@ namespace DocxExportPlugin
                     {
                         case "ST":
                             // Append the previous paragraph to the document
+                            // TODO: DRY. This exact code is repeated in the newline section
                             if (p != null)
                             {
                                 // End the previous run if it's still ongoing
@@ -94,7 +96,7 @@ namespace DocxExportPlugin
                                 }
 
                                 // Ignore empty paragraphs
-                                if (p.InnerText != "")
+                                if (p.InnerText != "" && !ignore && style != "TOC Heading" && style != "Modify Date")
                                 {
                                     body.AppendChild(p);
                                 }
@@ -123,6 +125,10 @@ namespace DocxExportPlugin
                             r = new Run();
                             style = ReadFSXString(reader);
                             Utility.StyleRun(document, style, r);
+                            break;
+                        // Ignore Factsmith's table of contents
+                        case "MI":
+                            ignore = b == 27;
                             break;
                     }
                 // ASCI Text
@@ -160,8 +166,8 @@ namespace DocxExportPlugin
                             }
                         }
 
-                        // Ignore empty paragraphs
-                        if (p.InnerText != "")
+                        // Ignore empty paragraphs and Factsmith's TOC
+                        if (p.InnerText != "" && !ignore && style != "TOC Heading" && style != "Modify Date")
                         {
                             body.AppendChild(p);
                         }
@@ -184,8 +190,8 @@ namespace DocxExportPlugin
             // - [x] Eliminate empty paragraphs
             // - [x] Mult-paragraph quotes
             // - [x] render Title
-            // - [ ] exclude factsmith modified date
-            // - [ ] exclude factsmith TOC
+            // - [x] exclude factsmith modified date
+            // - [x] exclude factsmith TOC
             // - [ ] render proper TOC
             // - [ ] Inline italics
             // - [ ] Notes
