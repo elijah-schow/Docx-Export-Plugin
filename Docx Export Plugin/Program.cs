@@ -1,33 +1,44 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using System.Linq;
 
+
+// TODO:
+// - [x] Character styles
+// - [x] Eliminate empty paragraphs
+// - [x] Mult-paragraph quotes
+// - [x] render Title
+// - [x] exclude factsmith modified date
+// - [x] exclude factsmith TOC
+// - [x] Command line / Factsmith interface
+// - [ ] Inline italics
+// - [ ] Factsmith template
+// - [ ] render proper TOC
+// - [ ] Notes
+// - [ ] Images, bullets, etc?
+// - [ ] Handle file not found
 namespace DocxExportPlugin
 {
     class Program
     {
         static void Main(string[] args)
         {
-            string basePath = @"C:\Users\elija\Code\docx-export-plugin\";
-            string inputPath = basePath + "Chinese Economy - Weak.fsx";
-            string templatePath = basePath + "Template.docx";
-            Int32 unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-            string outputPath = basePath +  "Output " + unixTimestamp + ".docx";
+            // Get file paths
+            string inputPath = args.Last();
+            string outputPath = Path.ChangeExtension(inputPath, "docx");
+            string templatePath = @"Template.docx";
 
+            // Open the template file
             var document = WordprocessingDocument.Open(templatePath, true);
-            ImportFsx(inputPath, document);
-            document.SaveAs(outputPath);
 
-            Console.WriteLine("Saved " + outputPath);
+            // Start reading the fsx file
+            FileStream file = File.Open(inputPath, FileMode.Open);
+            BinaryReader reader = new BinaryReader(file, Encoding.ASCII);
 
-        }
-
-        public static void ImportFsx(string inputPath, WordprocessingDocument document)
-        {
+            // Set up iteration variables
             Body body = document.MainDocumentPart.Document.Body;
             Paragraph p = null;
             Run r = null;
@@ -35,10 +46,6 @@ namespace DocxExportPlugin
             string style = "";
             bool ignore = false;
 
-            // Start reading the fsx file
-            FileStream file = File.Open(inputPath, FileMode.Open);
-            BinaryReader reader = new BinaryReader(file, Encoding.ASCII);
-            
             // Header
             string title = reader.ReadLine();
 
@@ -185,20 +192,11 @@ namespace DocxExportPlugin
                 }
             }
 
-            // TODO:
-            // - [x] Character styles
-            // - [x] Eliminate empty paragraphs
-            // - [x] Mult-paragraph quotes
-            // - [x] render Title
-            // - [x] exclude factsmith modified date
-            // - [x] exclude factsmith TOC
-            // - [ ] render proper TOC
-            // - [ ] Inline italics
-            // - [ ] Notes
-            // - [ ] Command line / Factsmith interface
-            // - [ ] Images, bullets, etc?
+            // Save and clean up
+            file.Close();
+            document.SaveAs(outputPath);
+            File.Delete(inputPath);
 
-            // - [ ] Factsmith template
         }
 
         public static string ReadFSXString(BinaryReader reader)
