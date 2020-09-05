@@ -2,9 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-
 
 // TODO:
 // - [x] Character styles
@@ -94,7 +94,7 @@ namespace DocxExportPlugin
                                     // Ignore empty runs
                                     if (t != "")
                                     {
-                                        r.AppendChild(new Text(t));
+                                        r.AppendChild(new Text() { Text = t, Space = SpaceProcessingModeValues.Preserve });
                                         t = "";
 
                                         p.AppendChild(r);
@@ -120,7 +120,7 @@ namespace DocxExportPlugin
                             if (r != null)
                             {
                                 // Append text to the current run
-                                r.AppendChild(new Text(t));
+                                r.AppendChild(new Text() { Text = t, Space = SpaceProcessingModeValues.Preserve });
                                 t = "";
 
                                 // Append current run to the current paragraph
@@ -167,7 +167,7 @@ namespace DocxExportPlugin
                             // Ignore empty runs
                             if (t != "")
                             {
-                                r.AppendChild(new Text(t));
+                                r.AppendChild(new Text() { Text = t, Space = SpaceProcessingModeValues.Preserve });
                                 t = "";
 
                                 p.AppendChild(r);
