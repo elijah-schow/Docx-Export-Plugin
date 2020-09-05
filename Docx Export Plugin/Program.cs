@@ -36,7 +36,7 @@ namespace DocxExportPlugin
 
             // Start reading the fsx file
             FileStream file = File.Open(inputPath, FileMode.Open);
-            BinaryReader reader = new BinaryReader(file, Encoding.ASCII);
+            BinaryReader reader = new BinaryReader(file);
 
             // Set up iteration variables
             Body body = document.MainDocumentPart.Document.Body;
@@ -139,14 +139,15 @@ namespace DocxExportPlugin
                             break;
                     }
                 // ASCI Text
-                } else if (b >= 32 && b <= 128)
+                } else if (b >= 32)
                 {
                     // Start a new run if one doesn't exist already
                     if (r == null)
                     {
                         r = new Run();
                     }
-                    t += Convert.ToChar(b);
+                    // Fixme: this is not reading extended ASCII correctly
+                    t += Convert.ToChar(b); 
                 // Newlines
                 } else if (b == 10 || b == 13)
                 {
@@ -195,7 +196,7 @@ namespace DocxExportPlugin
             // Save and clean up
             file.Close();
             document.SaveAs(outputPath);
-            File.Delete(inputPath);
+            // File.Delete(inputPath);
 
         }
 
