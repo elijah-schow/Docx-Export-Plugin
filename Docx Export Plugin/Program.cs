@@ -122,9 +122,22 @@ namespace DocxExportPlugin
                         case "SC":
                             if (r != null)
                             {
-                                // Append text to the current run
-                                r.AppendChild(new Text() { Text = t, Space = SpaceProcessingModeValues.Preserve });
-                                t = "";
+                                // Only trim if this is an underlined character style
+                                string cStyle = r?.RunProperties?.RunStyle?.Val;
+                                if (t.Last() == ' ' && (cStyle == "Citation-ReadThis" || cStyle == "Quote-ReadThis"))
+                                {
+                                    // Append text to the current run and DO trim whitespace
+                                    r.AppendChild(new Text(t));
+
+                                    // Add one space to the beginning of the next run
+                                    t = " ";
+                                } else
+                                {
+                                    // Append text to the current run and DON'T trim whitespace
+                                    r.AppendChild(new Text() { Text = t, Space = SpaceProcessingModeValues.Preserve });
+                                    t = "";
+                                }
+
 
                                 // Append current run to the current paragraph
                                 p.AppendChild(r);
