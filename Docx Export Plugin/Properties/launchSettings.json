@@ -2,8 +2,8 @@
   "profiles": {
     "Docx Export Plugin": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\elija\\Desktop\\GEN - Immigration Good [COMPLETE].fsx\"",
-      "workingDirectory": "C:\\Users\\elija\\Desktop"
+      "commandLineArgs": "/P \"C:\\Users\\elija\\Desktop\\Misc\\docx-export-plugin\\GEN - Immigration Good [COMPLETE].fsx\"",
+      "workingDirectory": "C:\\Users\\elija\\Desktop\\Misc\\docx-export-plugin"
     }
   }
 }

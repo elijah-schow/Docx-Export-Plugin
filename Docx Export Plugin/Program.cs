@@ -26,6 +26,9 @@ namespace DocxExportPlugin
     {
         static void Main(string[] args)
         {
+            // Get "Preserve input file" "/P" flag
+            bool preserve = args.Contains("/P");
+
             // Get file paths
             string inputPath = args.Last();
             string outputPath = Path.ChangeExtension(inputPath, "docx");
@@ -196,7 +199,12 @@ namespace DocxExportPlugin
             // Save and clean up
             file.Close();
             document.SaveAs(outputPath);
-            // File.Delete(inputPath);
+
+            // Delete the input file unless the "/P" flag is set
+            if(!preserve)
+            {
+                File.Delete(inputPath);
+            }
 
         }
 
